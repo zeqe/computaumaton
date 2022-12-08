@@ -11,23 +11,26 @@ unsigned int ul_len(struct uint_list *ul){
 	return ul->len;
 }
 
-void ul_add(struct uint_list *ul,unsigned int val){
+void ul_add_after(struct uint_list *ul,unsigned int val){
 	if(ul->len >= UINT_BLOCK_LEN){
 		// List cannot exceed block size
 		return;
 	}
 	
+	// Insert at 0 if len = 0, otherwise insert at i + 1
+	unsigned int insert_i = ul->i + (ul->len != 0);
+	
 	// Move elements at and after the insertion position
 	memmove(
-		ul->block + ul->i + 1,
-		ul->block + ul->i + 0,
-		(ul->len - ul->i) * sizeof(unsigned int)
+		ul->block + insert_i + 1,
+		ul->block + insert_i + 0,
+		(ul->len - insert_i) * sizeof(unsigned int)
 	);
 	
 	++(ul->len);
 	
 	// Insert
-	ul->block[ul->i] = val;
+	ul->block[insert_i] = val;
 }
 
 void ul_remove(struct uint_list *ul){
@@ -74,7 +77,7 @@ void ul_val_backward(struct uint_list *ul){
 }
 
 void ul_i_forward(struct uint_list *ul){
-	if(ul->i >= ul->len){
+	if(ul->i + 1 >= ul->len){
 		// Cannot go beyond the length of list
 		return;
 	}

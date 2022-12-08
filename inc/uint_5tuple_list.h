@@ -14,22 +14,13 @@
 		
 		// block is the allocated space for the list to store its elements, which are 5-tuples of unsigned integers
 		// len is how many 5-tuples are stored in the block so far: len <= UINT_5TUPLE_BLOCK_LEN
-		// i is the current 5-tuple's index: 0 <= i <= len
-		
-		// allowing i = len:
-		// 
-		//                                            |[ i=len=3 ]
-		//                                            |\         /
-		// block: [(#,#,#,#,#),(#,#,#,#,#),(#,#,#,#,#),(_,_,_,_,_),(_,_,_,_,_),...]
-		// 
-		// - allows insertion of an element to the end with add()
-		// - must cause remove() to do nothing at that location, since there is no element to remove
+		// i is the current 5-tuple's index: 0 <= i < len (unless len = 0, then i = len = 0)
 	};
 	
 	void u5l_init(struct uint_5tuple_list *u5l);
 	unsigned int u5l_len(struct uint_5tuple_list *u5l);
 	
-	void u5l_add(struct uint_5tuple_list *u5l,unsigned int val[5]);
+	void u5l_add_after(struct uint_5tuple_list *u5l,unsigned int val[5]);
 	void u5l_remove(struct uint_5tuple_list *u5l);
 	
 	void u5l_val_forward(struct uint_5tuple_list *u5l);

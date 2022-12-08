@@ -11,27 +11,30 @@ unsigned int u5l_len(struct uint_5tuple_list *u5l){
 	return u5l->len;
 }
 
-void u5l_add(struct uint_5tuple_list *u5l,unsigned int val[5]){
+void u5l_add_after(struct uint_5tuple_list *u5l,unsigned int val[5]){
 	if(u5l->len >= UINT_5TUPLE_BLOCK_LEN){
 		// List cannot exceed block size
 		return;
 	}
 	
+	// Insert at 0 if len = 0, otherwise insert at i + 1
+	unsigned int insert_i = u5l->i + (u5l->len != 0);
+	
 	// Move elements at and after the insertion position
 	memmove(
-		u5l->block + 5 * (u5l->i + 1),
-		u5l->block + 5 * (u5l->i + 0),
-		5 * (u5l->len - u5l->i) * sizeof(unsigned int)
+		u5l->block + 5 * (insert_i + 1),
+		u5l->block + 5 * (insert_i + 0),
+		5 * (u5l->len - insert_i) * sizeof(unsigned int)
 	);
 	
 	++(u5l->len);
 	
 	// Insert
-	u5l->block[5 * u5l->i + 0] = val[0];
-	u5l->block[5 * u5l->i + 1] = val[1];
-	u5l->block[5 * u5l->i + 2] = val[2];
-	u5l->block[5 * u5l->i + 3] = val[3];
-	u5l->block[5 * u5l->i + 4] = val[4];
+	u5l->block[5 * insert_i + 0] = val[0];
+	u5l->block[5 * insert_i + 1] = val[1];
+	u5l->block[5 * insert_i + 2] = val[2];
+	u5l->block[5 * insert_i + 3] = val[3];
+	u5l->block[5 * insert_i + 4] = val[4];
 }
 
 void u5l_remove(struct uint_5tuple_list *u5l){
@@ -78,7 +81,7 @@ void u5l_val_backward(struct uint_5tuple_list *u5l){
 }
 
 void u5l_i_forward(struct uint_5tuple_list *u5l){
-	if(u5l->i >= u5l->len){
+	if(u5l->i + 1 >= u5l->len){
 		// Cannot go beyond the length of list
 		return;
 	}
