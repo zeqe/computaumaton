@@ -17,8 +17,10 @@
 		// i is the current unsigned integer's index: 0 <= i < len (unless len = 0, then i = len = 0)
 	};
 	
-	void ul_init(struct uint_list *ul);
 	unsigned int ul_len(struct uint_list *ul);
+	unsigned int ul_i(struct uint_list *ul);
+	
+	void ul_init(struct uint_list *ul);
 	
 	void ul_add_after(struct uint_list *ul,unsigned int val);
 	void ul_remove(struct uint_list *ul);
@@ -32,7 +34,10 @@
 	void ul_get(struct uint_list *ul,unsigned int *val);
 	void ul_set(struct uint_list *ul,unsigned int val);
 	
-	void ul_forall(struct uint_list *ul,void (*f)(unsigned int,unsigned int,unsigned int)); // f(val,index,is_current)
+	void ul_forall(struct uint_list *ul,void (*f)(unsigned int,unsigned int)); // f(val,index)
+	void ul_removeif(struct uint_list *ul,unsigned int (*f)(unsigned int)); // f(val) returns to_be_deleted (0 = false, else true)
+	
+	unsigned int ul_contains(struct uint_list *ul,unsigned int val);
 	
 	#define UINT_LIST_INCLUDED
 #endif

@@ -2,13 +2,17 @@
 
 #include "uint_list.h"
 
+unsigned int ul_len(struct uint_list *ul){
+	return ul->len;
+}
+
+unsigned int ul_i(struct uint_list *ul){
+	return ul->i;
+}
+
 void ul_init(struct uint_list *ul){
 	ul->len = 0;
 	ul->i = 0;
-}
-
-unsigned int ul_len(struct uint_list *ul){
-	return ul->len;
 }
 
 void ul_add_after(struct uint_list *ul,unsigned int val){
@@ -112,8 +116,37 @@ void ul_set(struct uint_list *ul,unsigned int val){
 	ul->block[ul->i] = val;
 }
 
-void ul_forall(struct uint_list *ul,void (*f)(unsigned int,unsigned int,unsigned int)){ // f(val,index,is_current)
+void ul_forall(struct uint_list *ul,void (*f)(unsigned int,unsigned int)){ // f(val,index)
 	for(unsigned int i = 0;i < ul->len;++i){
-		(*f)(ul->data + i,i,ul->i == i);
+		(*f)(ul->block[i],i);
 	}
+}
+
+void ul_removeif(struct uint_list *ul,unsigned int (*f)(unsigned int)){ // f(val) returns to_be_deleted (0 = false, else true)
+	// O(n) multiple-item remove: perform a copy of the whole list while skipping elements that are to be removed
+	unsigned int dest_i = 0;
+	
+	for(unsigned int i = 0;i < ul->len;++i){
+		if((*f)(ul->block[i])){
+			// Element to be removed: skip it
+			continue;
+		}
+		
+		// Otherwise, element to remain in list: copy it
+		ul->block[dest_i] = ul->block[i];
+		++dest_i;
+	}
+	
+	// Update length
+	ul->len = dest_i;
+}
+
+unsigned int ul_contains(struct uint_list *ul,unsigned int val){
+	unsigned int found = 0;
+	
+	for(unsigned int i = 0;i < ul->len;++i){
+		found = found || (ul->block[i] == val);
+	}
+	
+	return found;
 }

@@ -17,8 +17,10 @@
 		// i is the current 5-tuple's index: 0 <= i < len (unless len = 0, then i = len = 0)
 	};
 	
-	void u5l_init(struct uint_5tuple_list *u5l);
 	unsigned int u5l_len(struct uint_5tuple_list *u5l);
+	unsigned int u5l_i(struct uint_5tuple_list *u5l);
+	
+	void u5l_init(struct uint_5tuple_list *u5l);
 	
 	void u5l_add_after(struct uint_5tuple_list *u5l,unsigned int val[5]);
 	void u5l_remove(struct uint_5tuple_list *u5l);
@@ -32,7 +34,10 @@
 	void u5l_get(struct uint_5tuple_list *u5l,unsigned int (*val)[5]);
 	void u5l_set(struct uint_5tuple_list *u5l,unsigned int val[5]);
 	
-	void u5l_forall(struct uint_5tuple_list *u5l,void (*f)(unsigned int [5],unsigned int,unsigned int)); // f(val,index,is_current)
+	void u5l_forall(struct uint_5tuple_list *u5l,void (*f)(unsigned int [5],unsigned int)); // f(val,index)
+	void u5l_removeif(struct uint_5tuple_list *u5l,unsigned int (*f)(unsigned int [5])); // f(val) returns to_be_deleted (0 = false, else true)
+	
+	unsigned int u5l_contains(struct uint_5tuple_list *u5l,unsigned int val[5]);
 	
 	#define UINT_5TUPLE_LIST_INCLUDED
 #endif

@@ -2,13 +2,17 @@
 
 #include "uint_5tuple_list.h"
 
+unsigned int u5l_len(struct uint_5tuple_list *u5l){
+	return u5l->len;
+}
+
+unsigned int u5l_i(struct uint_5tuple_list *u5l){
+	return u5l->i;
+}
+
 void u5l_init(struct uint_5tuple_list *u5l){
 	u5l->len = 0;
 	u5l->i = 0;
-}
-
-unsigned int u5l_len(struct uint_5tuple_list *u5l){
-	return u5l->len;
 }
 
 void u5l_add_after(struct uint_5tuple_list *u5l,unsigned int val[5]){
@@ -124,8 +128,41 @@ void u5l_set(struct uint_5tuple_list *u5l,unsigned int val[5]){
 	u5l->block[5 * u5l->i + 4] = val[4];
 }
 
-void u5l_forall(struct uint_5tuple_list *u5l,void (*f)(unsigned int [5],unsigned int,unsigned int)){ // f(val,index,is_current)
+void u5l_forall(struct uint_5tuple_list *u5l,void (*f)(unsigned int [5],unsigned int)){ // f(val,index)
 	for(unsigned int i = 0;i < u5l->len;++i){
-		(*f)(u5l->data + 5 * i,i,u5l->i == i);
+		(*f)(u5l->block + 5 * i,i);
 	}
+}
+
+void u5l_removeif(struct uint_5tuple_list *u5l,unsigned int (*f)(unsigned int [5])){ // f(val) returns to_be_deleted (0 = false, else true)
+	// O(n) multiple-item remove: perform a copy of the whole list while skipping elements that are to be removed
+	unsigned int dest_i = 0;
+	
+	for(unsigned int i = 0;i < u5l->len;++i){
+		if((*f)(u5l->block + 5 * i)){
+			// Element to be removed: skip it
+			continue;
+		}
+		
+		// Otherwise, element to remain in list: copy it
+		if(dest_i != i){
+			// Only copy if it is to change positions, however
+			memcpy(u5l->block + 5 * dest_i,u5l->block + 5 * i,5 * sizeof(unsigned int));
+		}
+		
+		++dest_i;
+	}
+	
+	// Update length
+	u5l->len = dest_i;
+}
+
+unsigned int u5l_contains(struct uint_5tuple_list *u5l,unsigned int val[5]){
+	unsigned int found = 0;
+	
+	for(unsigned int i = 0;i < u5l->len;++i){
+		found = found || (memcmp(u5l->block + 5 * i,val,5 * sizeof(unsigned int)) == 0);
+	}
+	
+	return found;
 }
