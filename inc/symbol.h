@@ -8,7 +8,7 @@
 	// - long long: >= 64 bits, 8 bytes
 	
 	#define SYMBOL_EMPTY 0
-	#define SYMBOL_SET(symbol,index,byte) symbol = (symbol & ~(0xff << (8 * (index)))) | (((byte) & 0xff) << (8 * (index)))
+	#define SYMBOL_SET(symbol,index,byte) ((symbol & ~(0xff << (8 * (index)))) | (((byte) & 0xff) << (8 * (index))))
 	#define SYMBOL_GET(symbol,index) (((symbol) & (0xff << (8 * (index)))) >> (8 * (index)))
 	
 	#define SYMBOL_INCLUDED
