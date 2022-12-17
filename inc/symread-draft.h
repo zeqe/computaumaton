@@ -1,6 +1,6 @@
 #ifndef SYMREAD_INCLUDED
 	#include "uint.h"
-	#include "symbol.h"
+	#include "list.h"
 	
 	/*
 	symread: constructs a symbol value out of a sequence of input characters
@@ -68,15 +68,15 @@
 	be mixed with symread_ calls, unless state disruption is desired.
 	*/
 	
-	void sym1read_init(struct list_sym symbol_srcs[1]);
+	void sym1read_init(struct list_sym *symbol_srcs[1]);
 	uint sym1read_update(int in);
 	void sym1read_get(uint buffer[1]);
 	
-	void sym3read_init(struct list_sym symbol_srcs[3]);
+	void sym3read_init(struct list_sym *symbol_srcs[3]);
 	uint sym3read_update(int in);
 	void sym3read_get(uint buffer[3]);
 	
-	void sym5read_init(struct list_sym symbol_srcs[5]);
+	void sym5read_init(struct list_sym *symbol_srcs[5]);
 	uint sym5read_update(int in);
 	void sym5read_get(uint buffer[5]);
 	

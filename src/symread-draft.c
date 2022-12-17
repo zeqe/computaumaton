@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include "symbol.h"
 #include "symread.h"
 
 uint read_symbol;
@@ -62,111 +63,100 @@ uint symread_get(){
 	return read_symbol;
 }
 
-
-// SYMNREAD_ macros: N must be > 0
-
 #define SYMNREAD_TUPLE(N) read ## N ## _tuple
 #define SYMNREAD_SYMBOLS(N) read ## N ## _symbols
 #define SYMNREAD_SYMBOL_SRCS(N) read ## N ## _symbol_srcs
 
-#define SYMNREAD_VARS(N)       \
-	uint SYMNREAD_TUPLE(N)[N]; \
-	uint SYMNREAD_SYMBOLS(N);  \
-	struct list_sym *SYMNREAD_SYMBOL_SRCS(N)[N];
-
-#define SYMNREAD_INIT(N)\
-void sym ## N ## read_init(struct list_sym symbol_srcs[N]){\
-	/* Set tuple read variables */\
-	memset(SYMNREAD_TUPLE(N),0,N * sizeof(uint));\
-	SYMNREAD_SYMBOLS(N) = 0;\
+#define SYMNREAD_(N)\
+	uint SYMNREAD_TUPLE(N)[N];                  \
+	uint SYMNREAD_SYMBOLS(N);                   \
+	struct list_sym *SYMNREAD_SYMBOL_SRCS(N)[N];\
 	\
-	for(uint i = 0;i < N;++i){\
-		SYMNREAD_SYMBOL_SRCS(N)[i] = symbol_srcs[i];\
-	}\
-	\
-	/* Begin first symbol read */\
-	symread_init(SYMNREAD_SYMBOL_SRCS(N)[SYMNREAD_SYMBOLS(N)]->sym_size);\
-}
-
-#define SYMNREAD_UPDATE(N)\
-uint sym ## N ## read_update(int in){\
-	if(SYMNREAD_SYMBOLS(N) >= N){\
-		/* Tuple is already complete */\
-		return 1;\
-	}\
-	\
-	uint complete = 0;\
-	\
-	switch(in){\
-	case '<':\
-		/* "Item backspace" operator */\
+	void sym ## N ## read_init(struct list_sym *symbol_srcs[N]){\
+		/* Set tuple read variables */\
+		memset(SYMNREAD_TUPLE(N),0,N * sizeof(uint));\
+		SYMNREAD_SYMBOLS(N) = 0;\
 		\
-		if(SYMNREAD_TUPLE(N)[SYMNREAD_SYMBOLS(N)] != 0){\
-			/* Clear current symbol ---------- */\
-			SYMNREAD_TUPLE(N)[SYMNREAD_SYMBOLS(N)] = 0;\
-			return 0;\
+		for(uint i = 0;i < N;++i){\
+			SYMNREAD_SYMBOL_SRCS(N)[i] = symbol_srcs[i];\
+		}\
+		\
+		/* Begin first symbol read */\
+		if(SYMNREAD_SYMBOLS(N) < N){\
+			symread_init(SYMNREAD_SYMBOL_SRCS(N)[SYMNREAD_SYMBOLS(N)]->sym_max_bytes);\
+		}\
+	}\
+	\
+	uint sym ## N ## read_update(int in){\
+		if(SYMNREAD_SYMBOLS(N) >= N){\
+			/* Tuple is already complete */\
+			return 1;\
+		}\
+		\
+		uint complete = 0;\
+		\
+		switch(in){\
+		case '<':\
+			/* "Item backspace" operator */\
 			\
-		}else{\
-			/* Remove last symbol ------------ */\
-			if(SYMNREAD_SYMBOLS(N) == 0){\
-				/* Cannot remove a symbol from an empty tuple */\
+			if(SYMNREAD_TUPLE(N)[SYMNREAD_SYMBOLS(N)] != 0){\
+				/* Clear current symbol ---------- */\
+				SYMNREAD_TUPLE(N)[SYMNREAD_SYMBOLS(N)] = 0;\
+				return 0;\
+				\
+			}else{\
+				/* Remove last symbol ------------ */\
+				if(SYMNREAD_SYMBOLS(N) == 0){\
+					/* Cannot remove a symbol from an empty tuple */\
+					return 0;\
+				}\
+				\
+				--SYMNREAD_SYMBOLS(N);\
 				return 0;\
 			}\
 			\
-			--SYMNREAD_SYMBOLS(N);\
-			return 0;\
-		}\
-		\
-		break;\
-	default:\
-		/* Interpret input for individual tuple value */\
-		complete = symread_update(in);\
-		SYMNREAD_TUPLE(N)[SYMNREAD_SYMBOLS(N)] = symread_get();\
-		\
-		if(!complete){\
-			/* Input interpreted, but symbol value not completed */\
-			return 0;\
-		}\
-		\
-		if(!l1_contains(&(SYMNREAD_SYMBOL_SRCS(N)[SYMNREAD_SYMBOLS(N)]->sym_list),SYMNREAD_TUPLE(N)[SYMNREAD_SYMBOLS(N)])){\
-			/* Input interpreted and value completed, but the value is not a member of its source list */\
-			SYMNREAD_TUPLE(N)[SYMNREAD_SYMBOLS(N)] = 0;\
-			symread_init(SYMNREAD_SYMBOL_SRCS(N)[SYMNREAD_SYMBOLS(N)]->sym_size);\
+			break;\
+		default:\
+			/* Interpret input for individual tuple value */\
+			complete = symread_update(in);\
+			SYMNREAD_TUPLE(N)[SYMNREAD_SYMBOLS(N)] = symread_get();\
 			\
-			return 0;\
-		}\
-		\
-		/* Handle completion of valid symbol */\
-		++SYMNREAD_SYMBOLS(N);\
-		\
-		if(SYMNREAD_SYMBOLS(N) < N){\
-			/* Prepare to read another symbol */\
-			symread_init(SYMNREAD_SYMBOL_SRCS(N)[SYMNREAD_SYMBOLS(N)]->sym_size);\
+			if(!complete){\
+				/* Input interpreted, but symbol value not completed */\
+				return 0;\
+			}\
 			\
-			return 0;\
-		}else{\
-			/* Tuple value complete */\
-			return 1;\
+			if(!lu1_contains(&(SYMNREAD_SYMBOL_SRCS(N)[SYMNREAD_SYMBOLS(N)]->sym_list),&(SYMNREAD_TUPLE(N)[SYMNREAD_SYMBOLS(N)]))){\
+				/* Input interpreted and value completed, but the value is not a member of its source list */\
+				SYMNREAD_TUPLE(N)[SYMNREAD_SYMBOLS(N)] = 0;\
+				symread_init(SYMNREAD_SYMBOL_SRCS(N)[SYMNREAD_SYMBOLS(N)]->sym_max_bytes);\
+				\
+				return 0;\
+			}\
+			\
+			/* Handle completion of valid symbol */\
+			++SYMNREAD_SYMBOLS(N);\
+			\
+			if(SYMNREAD_SYMBOLS(N) < N){\
+				/* Prepare to read another symbol */\
+				symread_init(SYMNREAD_SYMBOL_SRCS(N)[SYMNREAD_SYMBOLS(N)]->sym_max_bytes);\
+				\
+				return 0;\
+			}else{\
+				/* Tuple value complete */\
+				return 1;\
+			}\
 		}\
+		\
+		return 0;\
 	}\
 	\
-	return 0;\
-}
-
-#define SYMNREAD_GET(N)\
-void sym ## N ## read_get(uint buffer[N]){\
-	/* Copy tuple to buffer */\
-	for(uint i = 0;i < N;++i){\
-		buffer[i] = SYMNREAD_TUPLE(N)[i];\
-	}\
-}
-
-#define SYMNREAD_(N)   \
-	SYMNREAD_VARS(N)   \
-	                   \
-	SYMNREAD_INIT(N)   \
-	SYMNREAD_UPDATE(N) \
-	SYMNREAD_GET(N)
+	void sym ## N ## read_get(uint buffer[N]){\
+		/* Copy tuple to buffer */\
+		for(uint i = 0;i < N;++i){\
+			buffer[i] = SYMNREAD_TUPLE(N)[i];\
+		}\
+	}
 
 SYMNREAD_(1)
 SYMNREAD_(3)
