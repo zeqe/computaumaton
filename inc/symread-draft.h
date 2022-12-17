@@ -68,17 +68,17 @@
 	be mixed with symread_ calls, unless state disruption is desired.
 	*/
 	
-	void sym1read_init(struct list_sym srcs[1]);
-	uint sym1read_update();
-	void sym1read_get(uint (*val)[1]);
+	void sym1read_init(struct list_sym symbol_srcs[1]);
+	uint sym1read_update(int in);
+	void sym1read_get(uint buffer[1]);
 	
-	void sym3read_init(struct list_sym srcs[3]);
-	uint sym3read_update();
-	void sym3read_get(uint (*val)[3]);
+	void sym3read_init(struct list_sym symbol_srcs[3]);
+	uint sym3read_update(int in);
+	void sym3read_get(uint buffer[3]);
 	
-	void sym5read_init(struct list_sym srcs[5]);
-	uint sym5read_update();
-	void sym5read_get(uint (*val)[5]);
+	void sym5read_init(struct list_sym symbol_srcs[5]);
+	uint sym5read_update(int in);
+	void sym5read_get(uint buffer[5]);
 	
 	#define SYMREAD_INCLUDED
 #endif
