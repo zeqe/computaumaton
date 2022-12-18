@@ -3,71 +3,62 @@
 	#include "list.h"
 	
 	/*
-	symread: constructs a symbol value out of a sequence of input characters
+	symread:  constructs a symbol out of a sequence of input characters
+	symNread: constructs an N-tuple of symbols out of a sequence of input characters
 	
-	USE ------------||
+	USE -------------------------------------||
 	
-	A sequence of calls to symread_ functions should look like:
-	  symread_init()            // begin a new read, clear previous read's state
-	  symread_update(in1) -> 0  // character interpreted, symbol construction not yet finished...
-	  symread_update(in2) -> 0  // another character interpreted, still not done...
-	  symread_update(in3) -> 0  // ...
-	  symread_update(in4) -> 1  // symbol completed!
-	  symread_get()             // retrieve the constructed symbol
+	To construct a new value, a sequence of calls should look like:
+	  _init()            // begin a new read with an emptied buffer
+	  _update(in1) -> 0  // character interpreted, value construction not yet finished...
+	  _update(in2) -> 0  // another character interpreted, still not done...
+	  _update(in3) -> 0  // ...
+	  _update(in4) -> 1  // value completed!
+	  _get()             // retrieve the constructed value from the buffer
 	
-	Should symread_update() be called after a previous call has returned 1, it will do nothing.
+	Should _update() be called after a previous _update() call has returned 1, it will do nothing.
 	  ...
-	  symread_update(in7) -> 0  // not done
-	  symread_update(in8) -> 1  // done
-	  symread_update(in9) -> 1  // indicates continued completion; 'in9' does not affect symread_ state
+	  _update(in7) -> 0  // not done
+	  _update(in8) -> 1  // done
+	  _update(in9) -> 1  // does nothing; 'in9' is effectively ignored
 	  ...
-	Only calling symread_init() will make symread_update() receptive to inputs again.
+	Only calling _init() will make _update() receptive to inputs again.
 	
-	The symbol being constructed can be previewed with symread_get(), even if symread_update() has not
+	The value being constructed can be previewed with _get(), even if _update() has not yet
 	returned 1:
 	  ...
-	  symread_update(in5) -> 0
-	  symread_get()             // preview current state of symbol buffer
-	  symread_update(in6) -> 1
-	  symread_get()             // retrieve symbol buffer with knowledge that it is now complete, and
-	                            // will not change until another call to symread_init() occurs
+	  _update(in5) -> 0
+	  _get()             // preview current state of buffer
+	  _update(in6) -> 1
+	  _get()             // retrieve buffer with knowledge that it is now complete, and will not
+	                     // change until another call to _init() occurs
 	
-	FORMAT ---------||
+	EXPECTATIONS-----------------------------||
 	
-	When a read is started with symread_init(max_bytes), further calls to symread_update() will ensure
-	that the symbol being constructed will not have more than 'max_bytes' bytes packed into it.
+	symread:
+	  When _init(max_bytes) is called, it sets the maximum number of bytes allowed in the symbol
+	  currently being constructed.
+	  Further calls to _update() will ensure that (0 < symbol_bytes <= max_bytes) when _update()
+	  returns 1, unless max_bytes == 0, in which case (0 == symbol_bytes == max_bytes).
 	
-	When symread_update() returns 1, it is guaranteed that the symbol constructed is not empty (ie, it
-	will contain more than 0 bytes, unless max_bytes == 0).
+	symNread:
+	  When _init(symbol_srcs) is called, it determines the "source list" for each symbol in the
+	  tuple. That is, if the i-th symbol of the tuple is not contained in symbol_srcs[i], it will
+	  be rejected, and the i-th symbol will be wholly re-constructed.
+	  symbol_srcs cannot have any NULL elements; symNread_ functions use
+	  symbol_srcs[i]->sym_max_bytes to determine the maximum byte size of each constituent symbol.
 	
-	Thus:
-	  0  < bytes <= max_bytes
-	Unless max_bytes == 0, then:
-	  0 == bytes == max_bytes
+	Note that symNread_ functions internally use symread_ functions to read individual symbols.
+	Thus, symNread_ function calls cannot be mixed with one another, nor can they be mixed with
+	symread_ calls.
 	*/
 	
+	// symread
 	void symread_init(uint max_bytes);
 	uint symread_update(int in);
 	uint symread_get();
 	
-	/*
-	symNread: constructs a tuple of N symbol elements out of a sequence of input characters
-	
-	USE ------------||
-	
-	The lifetime requirements and expectations for symNread_ functions are the same as for symread_
-	functions.
-	
-	The only difference is symNread_init():
-	You do not specify the maximum length, since tuple length is already specified to be N.
-	Instead, you provide an array to parent lists for each symbol value.
-	
-	
-	One caveat: symNread_ functions will internally read the individual symbol values for the tuple
-	using symread_ functions. Therefore, symNread_ calls cannot be mixed with one another, nor can they
-	be mixed with symread_ calls, unless state disruption is desired.
-	*/
-	
+	// symNread
 	void sym1read_init(struct list_sym *symbol_srcs[1]);
 	uint sym1read_update(int in);
 	void sym1read_get(uint buffer[1]);
