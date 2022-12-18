@@ -16,8 +16,8 @@
 	In this example, N = 5.
 	
 	'i' is the current position in the list.
-	'block' is the statically allocated space for the list to hold its items; it has enough space to
-	contain LIST_BLOCK_LEN N-tuples.
+	'block' is the statically allocated space for the list to hold its items; it has enough space
+	to contain LIST_BLOCK_LEN N-tuples.
 	
 	Thus:
 	  0 <= i <  len      <= LIST_BLOCK_LEN
@@ -26,8 +26,9 @@
 	
 	NOTES -----------------------------------||
 	
-	NAME determines the name of the resultant list struct, and PREFIX determines the prefix prepended
-	to the generated functions to uniquely discern them from those corresponding to other list types.
+	NAME determines the name of the resultant list struct, and PREFIX determines the prefix
+	prepended to the generated functions to uniquely discern them from those corresponding to other
+	list types.
 	
 	Documentation for the iterative functions:
 	  _forall:   f is called as f(T val[N],uint index)
