@@ -159,7 +159,7 @@
 		return found;\
 	}
 
-// Generic uint-tuple lists
-LIST_DEFN(uint,1,list_uint1,lu1)
-LIST_DEFN(uint,3,list_uint3,lu3)
-LIST_DEFN(uint,5,list_uint5,lu5)
+// uint-tuple lists ---------------------||
+LIST_DEFN(uint,1,list_uint(1),lu(1))
+LIST_DEFN(uint,3,list_uint(3),lu(3))
+LIST_DEFN(uint,5,list_uint(5),lu(5))

@@ -59,25 +59,25 @@ uint symread_get(struct symread *read){
 	return read->buffer;
 }
 
-#define SYMNREAD_DEFN(N,SRC_LIST_NAME,SRC_LIST_PREFIX)\
+#define SYMREADN_DEFN(N)\
 	\
-	static void SYMNREAD_NAME(N) ## _begin_symbol(struct SYMNREAD_NAME(N) *read){\
+	static void symread(N) ## _begin_symbol(struct symread(N) *read){\
 		read->sym_read.max_bytes = read->sym_max_bytes[read->symbols];\
 		symread_init(&(read->sym_read));\
 	}\
 	\
-	void SYMNREAD_NAME(N) ## _init(struct SYMNREAD_NAME(N) *read){\
+	void symread(N) ## _init(struct symread(N) *read){\
 		/* Set tuple read variables */\
 		memset(read->buffer,0,N * sizeof(uint));\
 		read->symbols = 0;\
 		\
 		/* Begin first symbol read */\
 		if(read->symbols < N){\
-			SYMNREAD_NAME(N) ## _begin_symbol(read);\
+			symread(N) ## _begin_symbol(read);\
 		}\
 	}\
 	\
-	uint SYMNREAD_NAME(N) ## _update(struct SYMNREAD_NAME(N) *read,int in){\
+	uint symread(N) ## _update(struct symread(N) *read,int in){\
 		if(read->symbols >= N){\
 			/* Tuple is already complete */\
 			return 1;\
@@ -118,11 +118,11 @@ uint symread_get(struct symread *read){
 			\
 			if(
 				read->sym_srcs[read->symbols] != NULL &&
-				!SRC_LIST_PREFIX ## _contains(read->sym_srcs[read->symbols],&(read->buffer[read->symbols]))
+				!lu(1) ## _contains(read->sym_srcs[read->symbols],&(read->buffer[read->symbols]))
 			){\
 				/* Input interpreted and value completed, but the value is not a member of its source list */\
 				read->buffer[read->symbols] = 0;\
-				SYMNREAD_NAME(N) ## _begin_symbol(read);\
+				symread(N) ## _begin_symbol(read);\
 				\
 				return 0;\
 			}\
@@ -132,7 +132,7 @@ uint symread_get(struct symread *read){
 			\
 			if(read->symbols < N){\
 				/* Prepare to read another symbol */\
-				SYMNREAD_NAME(N) ## _begin_symbol(read);\
+				symread(N) ## _begin_symbol(read);\
 				\
 				return 0;\
 			}else{\
@@ -144,10 +144,10 @@ uint symread_get(struct symread *read){
 		return 0;\
 	}\
 	\
-	const uint *SYMNREAD_NAME(N) ## _get(struct SYMNREAD_NAME(N) *read){\
+	const uint *symread(N) ## _get(struct symread(N) *read){\
 		return read->buffer;\
 	}
 
-SYMNREAD_DEFN(1,list_uint1,lu1)
-SYMNREAD_DEFN(3,list_uint1,lu1)
-SYMNREAD_DEFN(5,list_uint1,lu1)
+SYMREADN_DEFN(1)
+SYMREADN_DEFN(3)
+SYMREADN_DEFN(5)

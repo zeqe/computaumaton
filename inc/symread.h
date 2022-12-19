@@ -4,12 +4,12 @@
 	
 	/*
 	symread_:  constructs a symbol out of a sequence of input characters
-	symNread_: constructs an N-tuple of symbols out of a sequence of input characters
+	symread(N)_: constructs an N-tuple of symbols out of a sequence of input characters
 	
 	USE -------------------------------------||
 	
 	To construct a new value, a sequence of calls should look like:
-	  s = _INIT(args)       // create a new symread/symNread buffer object,
+	  s = _INIT(args)       // create a new symread/symread(N) buffer object,
 	                        // configured according to args
 	  
 	  _init(&s)             // begin a new read with an emptied buffer
@@ -44,13 +44,13 @@
 	    When _update(&s,#) returns 1, it will be guaranteed that (0 < symbol_bytes <= MAX_BYTES),
 	    unless MAX_BYTES == 0, in which case (0 == symbol_bytes == MAX_BYTES).
 	
-	struct symNread s = SYMNREAD_INIT(MAX_BYTES,SRCS);
+	struct symread(N) s = SYMREADN_INIT(MAX_BYTES,SRCS);
 	  uint MAX_BYTES[N]:
 	    Specifies the maximum number of bytes allowed in the i-th symbol of the constructed tuple.
 	    If the i-th symbol contains more bytes than MAX_BYTES[i], it will be rejected and wholly
 	    reconstructed.
 	  
-	  struct SRC_LIST_NAME *SRCS[N]:
+	  struct list_uint(1) *SRCS[N]:
 	    Specifies the list to which the i-th symbol of the constructed tuple must be a part of.
 	    If the i-th symbol is not contained in SRCS[i], it will be rejected and wholly
 	    reconstructed.
@@ -74,14 +74,14 @@
 	uint symread_update(struct symread *read,int in);
 	uint symread_get   (struct symread *read);
 	
-	// symNread -----------------------------||
-	#define SYMNREAD_NAME(N) sym ## N ## read
+	// symread(N) ---------------------------||
+	#define symread(N) symread ## N
 	
-	#define SYMNREAD_DECL(N,SRC_LIST_NAME,SRC_LIST_PREFIX)\
-		struct SYMNREAD_NAME(N){\
+	#define SYMREADN_DECL(N)\
+		struct symread(N){\
 			/* Configuration */            \
 			uint sym_max_bytes[N];         \
-			struct SRC_LIST_NAME *sym_srcs[N];\
+			struct list_uint(1) *sym_srcs[N];\
 			\
 			/* Run-time data */\
 			uint symbols;      \
@@ -90,15 +90,15 @@
 			struct symread sym_read;\
 		};\
 		\
-		      void  SYMNREAD_NAME(N) ## _init  (struct SYMNREAD_NAME(N) *read);       \
-		      uint  SYMNREAD_NAME(N) ## _update(struct SYMNREAD_NAME(N) *read,int in);\
-		const uint *SYMNREAD_NAME(N) ## _get   (struct SYMNREAD_NAME(N) *read);
+		      void  symread(N) ## _init  (struct symread(N) *read);       \
+		      uint  symread(N) ## _update(struct symread(N) *read,int in);\
+		const uint *symread(N) ## _get   (struct symread(N) *read);
 	
-	#define SYMNREAD_INIT(MAX_BYTES,SRCS) {MAX_BYTES,SRCS,0}
+	#define SYMREADN_INIT(MAX_BYTES,SRCS) {MAX_BYTES,SRCS,0}
 	
-	SYMNREAD_DECL(1,list_uint1,lu1)
-	SYMNREAD_DECL(3,list_uint1,lu1)
-	SYMNREAD_DECL(5,list_uint1,lu1)
+	SYMREADN_DECL(1)
+	SYMREADN_DECL(3)
+	SYMREADN_DECL(5)
 	
 	#define SYMREAD_INCLUDED
 #endif
