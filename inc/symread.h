@@ -38,13 +38,17 @@
 	
 	CONFIGURATION ---------------------------||
 	
-	struct symread s = SYMREAD_INIT(MAX_BYTES);
+	struct symread s = SYMREAD_INIT(MAX_BYTES,SRCS);
 	  uint MAX_BYTES:
 	    Specifies the maximum number of bytes allowed in any symbol constructed with s.
 	    When _update(&s,#) returns 1, it will be guaranteed that (0 < symbol_bytes <= MAX_BYTES),
 	    unless MAX_BYTES == 0, in which case (0 == symbol_bytes == MAX_BYTES).
+	  
+	  uint SRCS:
+	    Unused. Specified only for compliance with universal initializer - a default value of 0 is
+	    recommended.
 	
-	struct symread(N) s = SYMREADN_INIT(MAX_BYTES,SRCS);
+	struct symread(N) s = SYMREAD_INIT(MAX_BYTES,SRCS);
 	  uint MAX_BYTES[N]:
 	    Specifies the maximum number of bytes allowed in the i-th symbol of the constructed tuple.
 	    If the i-th symbol contains more bytes than MAX_BYTES[i], it will be rejected and wholly
@@ -58,17 +62,19 @@
 	    never be rejected on this basis.
 	*/
 	
+	// universal initializer ----------------||
+	#define SYMREAD_INIT(MAX_BYTES,SRCS) {MAX_BYTES,SRCS,0}
+	
 	// symread ------------------------------||
 	struct symread{
 		// Configuration
 		uint max_bytes;
+		uint srcs;
 		
 		// Run-time data
 		uint bytes;
 		uint buffer;
 	};
-	
-	#define SYMREAD_INIT(MAX_BYTES) {MAX_BYTES,0}
 	
 	void symread_init  (struct symread *read);
 	uint symread_update(struct symread *read,int in);
@@ -93,8 +99,6 @@
 		      void  symread(N) ## _init  (struct symread(N) *read);       \
 		      uint  symread(N) ## _update(struct symread(N) *read,int in);\
 		const uint *symread(N) ## _get   (struct symread(N) *read);
-	
-	#define SYMREADN_INIT(MAX_BYTES,SRCS) {MAX_BYTES,SRCS,0}
 	
 	SYMREADN_DECL(1)
 	SYMREADN_DECL(3)
