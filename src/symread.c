@@ -59,7 +59,7 @@ uint symread_get(struct symread *read){
 	return read->buffer;
 }
 
-#define SYMREADN_DEFN(N)\
+#define SYMREAD_DEFN(N)\
 	\
 	static void symread(N) ## _begin_symbol(struct symread(N) *read){\
 		read->sym_read.max_bytes = read->sym_max_bytes[read->symbols];\
@@ -148,6 +148,6 @@ uint symread_get(struct symread *read){
 		return read->buffer;\
 	}
 
-SYMREADN_DEFN(1)
-SYMREADN_DEFN(3)
-SYMREADN_DEFN(5)
+SYMREAD_DEFN(1)
+SYMREAD_DEFN(3)
+SYMREAD_DEFN(5)

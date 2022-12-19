@@ -83,7 +83,7 @@
 	// symread(N) ---------------------------||
 	#define symread(N) symread ## N
 	
-	#define SYMREADN_DECL(N)\
+	#define SYMREAD_DECL(N)\
 		struct symread(N){\
 			/* Configuration */            \
 			uint sym_max_bytes[N];         \
@@ -100,9 +100,9 @@
 		      uint  symread(N) ## _update(struct symread(N) *read,int in);\
 		const uint *symread(N) ## _get   (struct symread(N) *read);
 	
-	SYMREADN_DECL(1)
-	SYMREADN_DECL(3)
-	SYMREADN_DECL(5)
+	SYMREAD_DECL(1)
+	SYMREAD_DECL(3)
+	SYMREAD_DECL(5)
 	
 	#define SYMREAD_INCLUDED
 #endif
