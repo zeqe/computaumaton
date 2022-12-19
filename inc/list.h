@@ -40,8 +40,6 @@
 	  _contains: will return 1 if the list contains val, 0 otherwise
 	*/
 	
-	#define LIST_EMPTY {0,0}
-	
 	#define LIST_DECL(T,N,NAME,PREFIX)\
 		struct NAME {\
 			uint len;                   \
@@ -69,18 +67,12 @@
 		void PREFIX ## _removeif(struct NAME *l,uint (*f)(T [N]));     \
 		uint PREFIX ## _contains(struct NAME *l,T val[N]);
 	
-	// Generic uint-tuple lists
+	#define LIST_INIT {0,0}
+	
+	// uint-tuple lists ---------------------||
 	LIST_DECL(uint,1,list_uint1,lu1)
 	LIST_DECL(uint,3,list_uint3,lu3)
 	LIST_DECL(uint,5,list_uint5,lu5)
-	
-	// Symbols tie-in: a specialized list specifying the maximum number of bytes per symbol-element
-	#include "symbol.h"
-	
-	struct list_sym{
-		uint sym_max_bytes;
-		struct list_uint1 sym_list;
-	};
 	
 	#define LIST_INCLUDED
 #endif

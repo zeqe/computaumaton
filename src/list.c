@@ -3,6 +3,7 @@
 #include "list.h"
 
 #define LIST_DEFN(T,N,NAME,PREFIX)\
+	\
 	uint PREFIX ## _len(struct NAME *l){\
 		return l->len;\
 	}\
