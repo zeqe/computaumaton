@@ -1,5 +1,45 @@
-#include "set.h"
+#include <string.h>
 
+#include "set_objects.h"
+
+// element-------------------------------||
+#define ELEMENT_DEFN(N)\
+	uint element(N) ## _update(struct element(N) *element,int in){\
+		if(element->is_reading){\
+			/* Continue reading new value */\
+			uint complete = symread(N) ## _update(&(element->read),in);\
+			\
+			if(complete){\
+				/* Store new value once read is complete */\
+				memcpy(&(element->value),symread(N) ## _get(&(element->read)),N * sizeof(uint));\
+				element->is_specified = 1;\
+				\
+				element->is_reading = 0;\
+			}\
+			\
+		}else{\
+			/* Perform atomic operations */\
+			switch(in){\
+			case '<':\
+				element->is_specified = 0;\
+				\
+				break;\
+			case ',':\
+				symread(N) ## _init(&(element->read));\
+				element->is_reading = 1;              \
+				\
+				break;\
+			}\
+		}\
+		\
+		return !(element->is_reading);\
+	}
+
+ELEMENT_DEFN(1)
+ELEMENT_DEFN(3)
+ELEMENT_DEFN(5)
+
+// set-----------------------------------||
 #define SET_DEFN(N)\
 	uint set(N) ## _update(struct set(N) *set,int in){\
 		if(set->is_reading){\
