@@ -41,7 +41,7 @@
 	*/
 	
 	#define LIST_DECL(T,N,NAME,PREFIX)\
-		struct NAME {\
+		struct NAME{\
 			uint len;                   \
 			uint i;                     \
 			\

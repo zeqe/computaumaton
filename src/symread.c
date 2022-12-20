@@ -4,38 +4,39 @@
 #include "symbol.h"
 #include "symread.h"
 
-void symread_init(struct symread *read){
-	read->buffer = 0;
-	read->bytes = 0;
+// symread ------------------------------||
+static void symread_init(uint *buffer,uint *bytes){
+	*buffer = 0;
+	*bytes = 0;
 }
 
-uint symread_update(struct symread *read,int in){
-	if(read->bytes >= read->max_bytes){
+static uint symread_update(uint *buffer,uint *bytes,uint max_bytes,int in){
+	if(*bytes >= max_bytes){
 		// Symbol is already complete
 		return 1;
 	}
 	
 	switch(in){
 	case '\t':
-		if(read->bytes == 0){
+		if(*bytes == 0){
 			// Cannot complete an empty symbol
 			return 0;
 		}
 		
 		// Complete symbol
-		read->bytes = read->max_bytes;
+		*bytes = max_bytes;
 		
 		return 1;
 		
 	case '\b':
-		if(read->bytes == 0){
+		if(*bytes == 0){
 			// Cannot erase a byte from an empty symbol
 			return 0;
 		}
 		
 		// Erase a byte
-		--(read->bytes);
-		read->buffer = SYMBOL_SET(read->buffer,read->bytes,0);
+		--(*bytes);
+		*buffer = SYMBOL_SET(*buffer,*bytes,0);
 		
 		return 0;
 		
@@ -46,34 +47,27 @@ uint symread_update(struct symread *read,int in){
 		}
 		
 		// Add a character-byte
-		read->buffer = SYMBOL_SET(read->buffer,read->bytes,(unsigned char)in);
-		++(read->bytes);
+		*buffer = SYMBOL_SET(*buffer,*bytes,(unsigned char)in);
+		++(*bytes);
 		
-		return read->bytes >= read->max_bytes;
+		return *bytes >= max_bytes;
 	}
 	
 	return 0;
 }
 
-uint symread_get(struct symread *read){
-	return read->buffer;
-}
-
+// symread(N) ---------------------------||
 #define SYMREAD_DEFN(N)\
-	\
-	static void symread(N) ## _begin_symbol(struct symread(N) *read){\
-		read->sym_read.max_bytes = read->sym_max_bytes[read->symbols];\
-		symread_init(&(read->sym_read));\
-	}\
 	\
 	void symread(N) ## _init(struct symread(N) *read){\
 		/* Set tuple read variables */\
-		memset(read->buffer,0,N * sizeof(uint));\
+		read->bytes = 0;\
 		read->symbols = 0;\
+		memset(read->buffer,0,N * sizeof(uint));\
 		\
 		/* Begin first symbol read */\
 		if(read->symbols < N){\
-			symread(N) ## _begin_symbol(read);\
+			symread_init(&(read->buffer[read->symbols]),&(read->bytes));\
 		}\
 	}\
 	\
@@ -108,8 +102,7 @@ uint symread_get(struct symread *read){
 			break;\
 		default:\
 			/* Interpret input for individual tuple value */\
-			complete = symread_update(&(read->sym_read),in);\
-			read->buffer[read->symbols] = symread_get(&(read->sym_read));\
+			complete = symread_update(&(read->buffer[read->symbols]),&(read->bytes),read->sym_max_bytes[read->symbols],in);\
 			\
 			if(!complete){\
 				/* Input interpreted, but symbol value not completed */\
@@ -122,7 +115,7 @@ uint symread_get(struct symread *read){
 			){\
 				/* Input interpreted and value completed, but the value is not a member of its source list */\
 				read->buffer[read->symbols] = 0;\
-				symread(N) ## _begin_symbol(read);\
+				symread_init(&(read->buffer[read->symbols]),&(read->bytes));\
 				\
 				return 0;\
 			}\
@@ -132,7 +125,7 @@ uint symread_get(struct symread *read){
 			\
 			if(read->symbols < N){\
 				/* Prepare to read another symbol */\
-				symread(N) ## _begin_symbol(read);\
+				symread_init(&(read->buffer[read->symbols]),&(read->bytes));\
 				\
 				return 0;\
 			}else{\

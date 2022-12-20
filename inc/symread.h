@@ -3,14 +3,12 @@
 	#include "list.h"
 	
 	/*
-	symread_:  constructs a symbol out of a sequence of input characters
-	symread(N)_: constructs an N-tuple of symbols out of a sequence of input characters
+	symread(N): constructs an N-tuple of symbols out of a sequence of input characters
 	
 	USE -------------------------------------||
 	
 	To construct a new value, a sequence of calls should look like:
-	  s = _INIT(args)       // create a new symread/symread(N) buffer object,
-	                        // configured according to args
+	  s = _INIT(args)       // create a new buffer object, configured according to args
 	  
 	  _init(&s)             // begin a new read with an emptied buffer
 	  _update(&s,in1) -> 0  // character interpreted, value construction not yet finished...
@@ -38,21 +36,13 @@
 	
 	CONFIGURATION ---------------------------||
 	
-	struct symread s = SYMREAD_INIT(MAX_BYTES,SRCS);
-	  uint MAX_BYTES:
-	    Specifies the maximum number of bytes allowed in any symbol constructed with s.
-	    When _update(&s,#) returns 1, it will be guaranteed that (0 < symbol_bytes <= MAX_BYTES),
-	    unless MAX_BYTES == 0, in which case (0 == symbol_bytes == MAX_BYTES).
-	  
-	  uint SRCS:
-	    Unused. Specified only for compliance with universal initializer - a default value of 0 is
-	    recommended.
-	
 	struct symread(N) s = SYMREAD_INIT(MAX_BYTES,SRCS);
 	  uint MAX_BYTES[N]:
 	    Specifies the maximum number of bytes allowed in the i-th symbol of the constructed tuple.
 	    If the i-th symbol contains more bytes than MAX_BYTES[i], it will be rejected and wholly
 	    reconstructed.
+	    When _update() returns 1, it will be guaranteed that the number of bytes in the i-th symbol
+	    will be > 0, unless MAX_BYTES[i] == 0, in which case it will == 0.
 	  
 	  struct list_uint(1) *SRCS[N]:
 	    Specifies the list to which the i-th symbol of the constructed tuple must be a part of.
@@ -62,25 +52,6 @@
 	    never be rejected on this basis.
 	*/
 	
-	// universal initializer ----------------||
-	#define SYMREAD_INIT(MAX_BYTES,SRCS) {MAX_BYTES,SRCS,0}
-	
-	// symread ------------------------------||
-	struct symread{
-		// Configuration
-		uint max_bytes;
-		uint srcs;
-		
-		// Run-time data
-		uint bytes;
-		uint buffer;
-	};
-	
-	void symread_init  (struct symread *read);
-	uint symread_update(struct symread *read,int in);
-	uint symread_get   (struct symread *read);
-	
-	// symread(N) ---------------------------||
 	#define symread(N) symread ## N
 	
 	#define SYMREAD_DECL(N)\
@@ -90,15 +61,17 @@
 			struct list_uint(1) *sym_srcs[N];\
 			\
 			/* Run-time data */\
+			uint bytes         \
 			uint symbols;      \
-			uint buffer[N];    \
 			\
-			struct symread sym_read;\
+			uint buffer[N];    \
 		};\
 		\
 		      void  symread(N) ## _init  (struct symread(N) *read);       \
 		      uint  symread(N) ## _update(struct symread(N) *read,int in);\
 		const uint *symread(N) ## _get   (struct symread(N) *read);
+	
+	#define SYMREAD_INIT(MAX_BYTES,SRCS) {MAX_BYTES,SRCS,0,0}
 	
 	SYMREAD_DECL(1)
 	SYMREAD_DECL(3)
