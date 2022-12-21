@@ -2,7 +2,7 @@
 
 #include "set_objects.h"
 
-// element-------------------------------||
+// element ------------------------------||
 #define ELEMENT_DEFN(N)\
 	uint element(N) ## _update(struct element(N) *element,int in){\
 		if(element->is_reading){\
@@ -39,7 +39,7 @@ ELEMENT_DEFN(1)
 ELEMENT_DEFN(3)
 ELEMENT_DEFN(5)
 
-// set-----------------------------------||
+// set ----------------------------------||
 #define SET_DEFN(N)\
 	uint set(N) ## _update(struct set(N) *set,int in){\
 		if(set->is_reading){\
